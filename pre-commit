@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cargo check --all
+cargo clippy --fix --all --allow-dirty
+cargo fmt --all
