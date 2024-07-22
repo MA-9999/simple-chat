@@ -1,4 +1,4 @@
 [workspace]
 resolver = "2"
 
-members = ["simple-chat-server", "simple-chat-shared"]
+members = ["simple-chat-client", "simple-chat-server", "simple-chat-shared"]

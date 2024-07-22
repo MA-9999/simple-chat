@@ -537,6 +537,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "simple-chat-client"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "env_logger",
+ "futures",
+ "futures-util",
+ "log",
+ "serde",
+ "serde_json",
+ "simple-chat-server",
+ "simple-chat-shared",
+ "tokio",
+ "tokio-stream",
+ "tokio-util",
+]
+
+[[package]]
 name = "simple-chat-server"
 version = "0.1.0"
 dependencies = [
