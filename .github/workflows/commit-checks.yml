@@ -2,7 +2,7 @@ name: commit-checks
 on: [ push ]
 
 jobs:
-  check:
+  commit-checks:
     runs-on: ubuntu-latest  
     steps:
     - name: Checkout  
