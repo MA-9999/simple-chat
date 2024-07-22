@@ -23,6 +23,9 @@ async fn test_two_clients() {
         simple_chat_server::run_server(socket_address.to_string()).await;
     });
 
+    // Give the server time to start before starting any clients.
+    tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+
     let _ = tokio::spawn(async move {
         simple_chat_client::process_server_connection(
             socket_address,
