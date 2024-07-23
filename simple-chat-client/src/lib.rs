@@ -247,6 +247,4 @@ pub async fn client_app(args: Args) {
 
     let _ = process_server_handle.await;
     let _ = process_terminal.await;
-
-    //let = 1;
 }
