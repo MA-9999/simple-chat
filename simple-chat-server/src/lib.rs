@@ -21,11 +21,11 @@ const CHANNEL_SIZE: usize = 100;
 #[command(version, about, long_about)]
 pub struct Args {
     /// Set the server ip to listen on.
-    #[arg(short)]
+    #[arg(short, long)]
     pub ip: Option<IpAddr>,
 
     /// Set the server port to listen on.
-    #[arg(short)]
+    #[arg(short, long)]
     pub port: Option<u16>,
 }
 
