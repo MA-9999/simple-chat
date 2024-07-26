@@ -122,7 +122,6 @@ pub async fn process_user_updates<T: AsyncRead + AsyncWrite + Unpin + Send + 'st
                                     }
 
                                     if let Err(error) = user.user_map_updates_tx.send((message.clone(), None)).await {
-                                        // TODO: Log error
                                         error!("Error {error} when passing leave message for user {username} to user map task");
                                     }
 
@@ -272,7 +271,7 @@ pub async fn deregister_user(user_map: Arc<UserMap>, username: String) -> Result
     if user_map.get(&username).is_some() {
         user_map.remove(&username);
     } else {
-        // TODO: If we can't deregister the user, then we should log the error.
+        // If we can't deregister the user, then we should log the error.
         return Err(anyhow::Error::msg(format!(
             "Unable to find user {username} in the user map"
         )));
@@ -320,7 +319,6 @@ pub async fn process_user_map_updates<
 
             // Any other type of message sent to this task is an error.
             _ => {
-                // TODO: Log error
                 error!("Invalid ClientServerMessage {update_message:?} received by process_user_map_updates()");
             }
         }
@@ -339,47 +337,50 @@ pub async fn accept_new_connections<A: ToSocketAddrs>(
 
     // Wait for new connections from clients.
     while let Some(connection) = listener_stream.next().await {
-        if let Ok(connection) = connection {
-            let mut user_message_stream = Framed::new(connection, LinesCodec::new());
+        match connection {
+            Ok(connection) => {
+                let mut user_message_stream = Framed::new(connection, LinesCodec::new());
 
-            match user_message_stream.next().await {
-                Some(Ok(message)) => {
-                    let message_result = serde_json::from_str::<ClientServerMessages>(&message);
+                match user_message_stream.next().await {
+                    Some(Ok(message)) => {
+                        let message_result = serde_json::from_str::<ClientServerMessages>(&message);
 
-                    if let Ok(message) = message_result {
-                        match message.clone() {
-                            ClientServerMessages::Join(username) => {
-                                if let Err(error) = user_map_updates_tx
-                                    .send((message.clone(), Some(user_message_stream)))
-                                    .await
-                                {
-                                    // TODO: Log error
-                                    error!("Error {error} when passing join message for user {username} to user map task");
+                        if let Ok(message) = message_result {
+                            match message.clone() {
+                                ClientServerMessages::Join(username) => {
+                                    if let Err(error) = user_map_updates_tx
+                                        .send((message.clone(), Some(user_message_stream)))
+                                        .await
+                                    {
+                                        error!("Error {error} when passing join message for user {username} to user map task");
+                                    }
                                 }
-                            }
 
-                            // Only join messages should be received at this point - anything else should be logged as an error.
-                            _ => {
-                                // TODO: Log error
-                                error!("ClientServerMessage {message:?} received before user has been registered");
+                                // Only join messages should be received at this point - anything else should be logged as an error.
+                                _ => {
+                                    error!("ClientServerMessage {message:?} received before user has been registered");
+                                }
                             }
                         }
                     }
-                }
-                Some(Err(error)) => match error {
-                    LinesCodecError::MaxLineLengthExceeded => {
-                        error!("{}", error.to_string());
+                    Some(Err(error)) => {
+                        match error {
+                            LinesCodecError::MaxLineLengthExceeded => {
+                                error!("{}", error.to_string());
+                            }
+                            LinesCodecError::Io(error) => {
+                                debug!("IO Error {error} when trying to receive message from tcp stream");
+                            }
+                        }
                     }
-                    LinesCodecError::Io(error) => {
-                        debug!("IO Error {error} when trying to receive message from tcp stream");
+                    None => {
+                        debug!("Tcp stream has finished");
                     }
-                },
-                None => {
-                    debug!("Tcp stream has finished");
                 }
             }
-        } else {
-            // TODO: Log
+            Err(error) => {
+                error!("Received error {error} when trying to accept a new connection");
+            }
         }
     }
 
